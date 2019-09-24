@@ -64,6 +64,7 @@ import MasonryGrid from '~/components/MasonryGrid/MasonryGrid.vue'
 import MasonryGridItem from '~/components/MasonryGrid/MasonryGridItem.vue'
 import { mapGetters } from 'vuex'
 import { filterPosts } from '~/graphql/PostQuery.js'
+import { postAdded } from '~/graphql/Subscriptions'
 
 export default {
   components: {
@@ -171,6 +172,9 @@ export default {
     Post: {
       query() {
         return filterPosts(this.$i18n)
+      },
+      subscribeToMore: {
+        document: postAdded(),
       },
       variables() {
         return {

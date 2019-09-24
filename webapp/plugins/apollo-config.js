@@ -13,6 +13,7 @@ export default ({ app }) => {
     httpLinkOptions: {
       credentials: 'same-origin',
     },
+    wsEndpoint: process.env.WEBSOCKET_URI || 'ws://localhost:4000',
     credentials: true,
     tokenName: 'human-connection-token',
     persisting: false,
