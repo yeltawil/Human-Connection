@@ -1,10 +1,14 @@
 import uuid from 'uuid/v4'
 import { neo4jgraphql } from 'neo4j-graphql-js'
+import { PubSub, withFilter } from 'graphql-subscriptions'
 import fileUpload from './fileUpload'
 import { getBlockedUsers, getBlockedByUsers } from './users.js'
 import { mergeWith, isArray } from 'lodash'
 import { UserInputError } from 'apollo-server'
 import Resolver from './helpers/Resolver'
+
+const pubsub = new PubSub()
+const POST_ADDED = 'post_added'
 
 const filterForBlockedUsers = async (params, context) => {
   if (!context.user) return params
@@ -107,7 +111,7 @@ export default {
       } finally {
         session.close()
       }
-
+      pubsub.publish(POST_ADDED, { postAdded: post })
       return post
     },
     UpdatePost: async (_parent, params, context, _resolveInfo) => {
@@ -256,6 +260,14 @@ export default {
         session.close()
       }
       return relatedContributions
+    },
+  },
+  Subscription: {
+    postAdded: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(POST_ADDED),
+        (payload, variables) => payload.postAdded.id === variables.id,
+      ),
     },
   },
 }
