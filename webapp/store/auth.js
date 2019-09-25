@@ -1,4 +1,5 @@
 import gql from 'graphql-tag'
+import { restartWebsockets } from 'vue-cli-plugin-apollo/graphql-client'
 import { VERSION } from '~/constants/terms-and-conditions-version.js'
 
 export const state = () => {
@@ -117,6 +118,16 @@ export const actions = {
           password,
         },
       })
+      if (client.wsClient) {
+        client.wsClient.connectionParams = () => {
+          return {
+            headers: {
+              Authorization: login ? `${login}` : '',
+            },
+          }
+        }
+        restartWebsockets(client.wsClient)
+      }
       await this.app.$apolloHelpers.onLogin(login)
       commit('SET_TOKEN', login)
       await dispatch('fetchCurrentUser')
