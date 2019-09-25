@@ -184,9 +184,26 @@ export default {
           offset: 0,
         }
       },
-      update({ Post }) {
-        this.posts = Post
+      updateQuery: (previousResult, { subscriptionData }) => {
+        // Here, return the new result from the previous with the new data
+        // console.log('previousResult', previousResult, 'subscriptionData', subscriptionData)
+        if (subscriptionData.Post && subscriptionData.Post.id) {
+          return (this.posts = subscriptionData.Post)
+        }
+        if (previousResult.posts.find(post => post.id === subscriptionData.data.postAdded.id)) {
+          return previousResult
+        }
+        return {
+          posts: [
+            ...previousResult.posts,
+            // Add the new post
+            subscriptionData.data.postAdded,
+          ],
+        }
       },
+      // update({ Post }) {
+      //   this.posts = Post
+      // },
       fetchPolicy: 'cache-and-network',
     },
   },

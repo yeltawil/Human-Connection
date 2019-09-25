@@ -23,6 +23,7 @@ export default applyScalars(
             'Location',
             'SocialMedia',
             'NOTIFIED',
+            'Subscription'
           ],
           // add 'User' here as soon as possible
         },
@@ -43,6 +44,7 @@ export default applyScalars(
             'User',
             'EMOTED',
             'NOTIFIED',
+            'Subscription'
           ],
           // add 'User' here as soon as possible
         },
