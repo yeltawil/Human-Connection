@@ -40,6 +40,7 @@ export const postFragment = lang => gql`
     content
     contentExcerpt
     createdAt
+    updatedAt
     disabled
     deleted
     slug
@@ -56,6 +57,12 @@ export const postFragment = lang => gql`
       name
       icon
     }
+    pinnedBy {
+      id
+      name
+      role
+    }
+    pinnedAt
   }
 `
 export const commentFragment = lang => gql`
@@ -64,6 +71,7 @@ export const commentFragment = lang => gql`
   fragment comment on Comment {
     id
     createdAt
+    updatedAt
     disabled
     deleted
     content

@@ -22,27 +22,38 @@
         :key="comment.id"
         :comment="comment"
         :post="post"
+        :routeHash="routeHash"
         @deleteComment="updateCommentList"
         @updateComment="updateCommentList"
+        @toggleNewCommentForm="toggleNewCommentForm"
       />
     </div>
   </div>
 </template>
 <script>
-import Comment from '~/components/Comment.vue'
+import Comment from '~/components/Comment/Comment'
+import scrollToAnchor from '~/mixins/scrollToAnchor'
 
 export default {
+  mixins: [scrollToAnchor],
   components: {
     Comment,
   },
   props: {
+    routeHash: { type: String, default: () => '' },
     post: { type: Object, default: () => {} },
   },
   methods: {
+    checkAnchor(anchor) {
+      return anchor === '#comments'
+    },
     updateCommentList(updatedComment) {
       this.post.comments = this.post.comments.map(comment => {
         return comment.id === updatedComment.id ? updatedComment : comment
       })
+    },
+    toggleNewCommentForm(showNewCommentForm) {
+      this.$emit('toggleNewCommentForm', showNewCommentForm)
     },
   },
 }

@@ -23,7 +23,12 @@ const {
   SUBSCRIPTIONS_PATH = '/subscriptions',
 } = process.env
 
-export const requiredConfigs = { MAPBOX_TOKEN, JWT_SECRET, PRIVATE_KEY_PASSPHRASE }
+export const requiredConfigs = {
+  MAPBOX_TOKEN,
+  JWT_SECRET,
+  PRIVATE_KEY_PASSPHRASE,
+}
+
 export const smtpConfigs = {
   SMTP_HOST,
   SMTP_PORT,
@@ -37,6 +42,7 @@ export const serverConfigs = {
   CLIENT_URI,
   GRAPHQL_URI,
   WEBSOCKET_URI,
+  PUBLIC_REGISTRATION: process.env.PUBLIC_REGISTRATION === 'true',
   SUBSCRIPTIONS_PATH,
 }
 

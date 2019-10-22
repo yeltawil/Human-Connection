@@ -22,6 +22,7 @@ export const getBlockedUsers = async context => {
 }
 
 export const getBlockedByUsers = async context => {
+  if (context.user.role === 'moderator' || context.user.role === 'admin') return []
   const { neode } = context
   const userModel = neode.model('User')
   let blockedByUsers = neode
@@ -175,6 +176,7 @@ export default {
         'about',
         'termsAndConditionsAgreedVersion',
         'termsAndConditionsAgreedAt',
+        'allowEmbedIframes',
       ],
       boolean: {
         followedByCurrentUser:

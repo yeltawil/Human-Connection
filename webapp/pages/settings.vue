@@ -24,6 +24,10 @@ export default {
           path: `/settings`,
         },
         {
+          name: this.$t('settings.email.name'),
+          path: `/settings/my-email-address`,
+        },
+        {
           name: this.$t('settings.security.name'),
           path: `/settings/security`,
         },
@@ -34,6 +38,10 @@ export default {
         {
           name: this.$t('settings.blocked-users.name'),
           path: `/settings/blocked-users`,
+        },
+        {
+          name: this.$t('settings.embeds.name'),
+          path: `/settings/embeds`,
         },
         {
           name: this.$t('settings.deleteUserAccount.name'),

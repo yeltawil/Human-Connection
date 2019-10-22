@@ -28,12 +28,18 @@ module.exports = {
     relationship: 'FOLLOWS',
     target: 'User',
     direction: 'out',
+    properties: {
+      createdAt: { type: 'string', isoDate: true, default: () => new Date().toISOString() },
+    },
   },
   followedBy: {
     type: 'relationship',
     relationship: 'FOLLOWS',
     target: 'User',
     direction: 'in',
+    properties: {
+      createdAt: { type: 'string', isoDate: true, default: () => new Date().toISOString() },
+    },
   },
   friends: { type: 'relationship', relationship: 'FRIENDS', target: 'User', direction: 'both' },
   disabledBy: {
@@ -49,6 +55,7 @@ module.exports = {
     direction: 'in',
   },
   invitedBy: { type: 'relationship', relationship: 'INVITED', target: 'User', direction: 'in' },
+  lastActiveAt: { type: 'string', isoDate: true },
   createdAt: { type: 'string', isoDate: true, default: () => new Date().toISOString() },
   updatedAt: {
     type: 'string',
@@ -97,11 +104,31 @@ module.exports = {
     relationship: 'SHOUTED',
     target: 'Post',
     direction: 'out',
+    properties: {
+      createdAt: { type: 'string', isoDate: true, default: () => new Date().toISOString() },
+    },
   },
   isIn: {
     type: 'relationship',
     relationship: 'IS_IN',
     target: 'Location',
     direction: 'out',
+  },
+  pinned: {
+    type: 'relationship',
+    relationship: 'PINNED',
+    target: 'Post',
+    direction: 'out',
+    properties: {
+      createdAt: { type: 'string', isoDate: true, default: () => new Date().toISOString() },
+    },
+  },
+  allowEmbedIframes: {
+    type: 'boolean',
+    default: false,
+  },
+  locale: {
+    type: 'string',
+    allow: [null],
   },
 }

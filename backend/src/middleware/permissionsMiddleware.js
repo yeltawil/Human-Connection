@@ -111,6 +111,8 @@ const noEmailFilter = rule({
   return !('email' in args)
 })
 
+const publicRegistration = rule()(() => !!CONFIG.PUBLIC_REGISTRATION)
+
 // Permissions
 const permissions = shield(
   {
@@ -120,7 +122,7 @@ const permissions = shield(
       embed: allow,
       Category: allow,
       Tag: allow,
-      Report: isModerator,
+      reports: isModerator,
       statistics: allow,
       currentUser: allow,
       Post: or(onlyEnabledContent, isModerator),
@@ -132,12 +134,13 @@ const permissions = shield(
       PostsEmotionsByCurrentUser: isAuthenticated,
       blockedUsers: isAuthenticated,
       notifications: isAuthenticated,
+      profilePagePosts: or(onlyEnabledContent, isModerator),
     },
     Mutation: {
       '*': deny,
       login: allow,
       SignupByInvitation: allow,
-      Signup: isAdmin,
+      Signup: or(publicRegistration, isAdmin),
       SignupVerification: allow,
       CreateInvitationCode: and(isAuthenticated, or(not(invitationLimitReached), isAdmin)),
       UpdateUser: onlyYourself,
@@ -170,9 +173,13 @@ const permissions = shield(
       block: isAuthenticated,
       unblock: isAuthenticated,
       markAsRead: isAuthenticated,
+      AddEmailAddress: isAuthenticated,
+      VerifyEmailAddress: isAuthenticated,
+      pinPost: isAdmin,
+      unpinPost: isAdmin,
     },
     User: {
-      email: isMyOwn,
+      email: or(isMyOwn, isAdmin),
     },
   },
   {

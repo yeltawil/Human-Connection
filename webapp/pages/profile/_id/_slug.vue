@@ -234,6 +234,8 @@
                 :post="post"
                 :width="{ base: '100%', md: '100%', xl: '50%' }"
                 @removePostFromList="removePostFromList"
+                @pinPost="pinPost"
+                @unpinPost="unpinPost"
               />
             </masonry-grid-item>
           </template>
@@ -251,7 +253,7 @@
           </template>
         </masonry-grid>
         <div
-          v-if="hasMore"
+          v-if="hasMore && posts.length >= pageSize"
           v-infinite-scroll="showMoreContributions"
           :infinite-scroll-disabled="$apollo.loading"
           :infinite-scroll-distance="10"
@@ -268,7 +270,7 @@
 <script>
 import uniqBy from 'lodash/uniqBy'
 import User from '~/components/User/User'
-import HcPostCard from '~/components/PostCard'
+import HcPostCard from '~/components/PostCard/PostCard.vue'
 import HcFollowButton from '~/components/FollowButton.vue'
 import HcCountTo from '~/components/CountTo.vue'
 import HcBadges from '~/components/Badges.vue'
@@ -279,9 +281,10 @@ import HcUpload from '~/components/Upload'
 import HcAvatar from '~/components/Avatar/Avatar.vue'
 import MasonryGrid from '~/components/MasonryGrid/MasonryGrid.vue'
 import MasonryGridItem from '~/components/MasonryGrid/MasonryGridItem.vue'
-import { filterPosts } from '~/graphql/PostQuery'
+import { profilePagePosts } from '~/graphql/PostQuery'
 import UserQuery from '~/graphql/User'
 import { Block, Unblock } from '~/graphql/settings/BlockedUsers'
+import PostMutations from '~/graphql/PostMutations'
 
 const tabToFilterMapping = ({ tab, id }) => {
   return {
@@ -375,14 +378,14 @@ export default {
     showMoreContributions() {
       const { Post: PostQuery } = this.$apollo.queries
       if (!PostQuery) return // seems this can be undefined on subpages
-
       this.offset += this.pageSize
+
       PostQuery.fetchMore({
         variables: {
           offset: this.offset,
           filter: this.filter,
           first: this.pageSize,
-          orderBy: this.sorting,
+          orderBy: 'createdAt_desc',
         },
         updateQuery: (previousResult, { fetchMoreResult }) => {
           if (!fetchMoreResult || fetchMoreResult.Post.length < this.pageSize) {
@@ -412,6 +415,32 @@ export default {
       this.resetPostList()
       this.$apollo.queries.Post.refetch()
     },
+    pinPost(post) {
+      this.$apollo
+        .mutate({
+          mutation: PostMutations().pinPost,
+          variables: { id: post.id },
+        })
+        .then(() => {
+          this.$toast.success(this.$t('post.menu.pinnedSuccessfully'))
+          this.resetPostList()
+          this.$apollo.queries.Post.refetch()
+        })
+        .catch(error => this.$toast.error(error.message))
+    },
+    unpinPost(post) {
+      this.$apollo
+        .mutate({
+          mutation: PostMutations().unpinPost,
+          variables: { id: post.id },
+        })
+        .then(() => {
+          this.$toast.success(this.$t('post.menu.unpinnedSuccessfully'))
+          this.resetPostList()
+          this.$apollo.queries.Post.refetch()
+        })
+        .catch(error => this.$toast.error(error.message))
+    },
     optimisticFollow({ followedByCurrentUser }) {
       /*
        * Note: followedByCountStartValue is updated to avoid counting from 0 when follow/unfollow
@@ -437,18 +466,18 @@ export default {
   apollo: {
     Post: {
       query() {
-        return filterPosts(this.$i18n)
+        return profilePagePosts(this.$i18n)
       },
       variables() {
         return {
           filter: this.filter,
           first: this.pageSize,
           offset: 0,
-          orderBy: 'createdAt_desc',
+          orderBy: ['pinnedAt_asc', 'createdAt_desc'],
         }
       },
-      update({ Post }) {
-        this.posts = Post
+      update({ profilePagePosts }) {
+        this.posts = profilePagePosts
       },
       fetchPolicy: 'cache-and-network',
     },

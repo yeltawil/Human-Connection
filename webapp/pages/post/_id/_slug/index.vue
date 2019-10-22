@@ -6,8 +6,11 @@
       :class="{ 'post-card': true, 'disabled-content': post.disabled }"
     >
       <ds-space margin-bottom="small" />
-      <hc-user :user="post.author" :date-time="post.createdAt" />
-      <!-- Content Menu (can open Modals) -->
+      <hc-user :user="post.author" :date-time="post.createdAt">
+        <template v-slot:dateTime>
+          <ds-text v-if="post.createdAt !== post.updatedAt">({{ $t('post.edited') }})</ds-text>
+        </template>
+      </hc-user>
       <client-only>
         <content-menu
           placement="bottom-end"
@@ -15,6 +18,8 @@
           :resource="post"
           :modalsData="menuModalsData"
           :is-owner="isAuthor(post.author ? post.author.id : null)"
+          @pinPost="pinPost"
+          @unpinPost="unpinPost"
         />
       </client-only>
       <ds-space margin-bottom="small" />
@@ -65,9 +70,13 @@
       </ds-space>
       <!-- Comments -->
       <ds-section slot="footer">
-        <hc-comment-list :post="post" />
+        <hc-comment-list
+          :post="post"
+          :routeHash="$route.hash"
+          @toggleNewCommentForm="toggleNewCommentForm"
+        />
         <ds-space margin-bottom="large" />
-        <hc-comment-form :post="post" @createComment="createComment" />
+        <hc-comment-form v-if="showNewCommentForm" :post="post" @createComment="createComment" />
       </ds-section>
     </ds-card>
   </transition>
@@ -85,6 +94,7 @@ import HcCommentList from '~/components/CommentList/CommentList'
 import { postMenuModalsData, deletePostMutation } from '~/components/utils/PostHelpers'
 import PostQuery from '~/graphql/PostQuery'
 import HcEmotions from '~/components/Emotions/Emotions'
+import PostMutations from '~/graphql/PostMutations'
 
 export default {
   name: 'PostSlug',
@@ -113,6 +123,7 @@ export default {
       post: null,
       ready: false,
       title: 'loading',
+      showNewCommentForm: true,
     }
   },
   watch: {
@@ -153,6 +164,31 @@ export default {
     async createComment(comment) {
       this.post.comments.push(comment)
     },
+    pinPost(post) {
+      this.$apollo
+        .mutate({
+          mutation: PostMutations().pinPost,
+          variables: { id: post.id },
+        })
+        .then(() => {
+          this.$toast.success(this.$t('post.menu.pinnedSuccessfully'))
+        })
+        .catch(error => this.$toast.error(error.message))
+    },
+    unpinPost(post) {
+      this.$apollo
+        .mutate({
+          mutation: PostMutations().unpinPost,
+          variables: { id: post.id },
+        })
+        .then(() => {
+          this.$toast.success(this.$t('post.menu.unpinnedSuccessfully'))
+        })
+        .catch(error => this.$toast.error(error.message))
+    },
+    toggleNewCommentForm(showNewCommentForm) {
+      this.showNewCommentForm = showNewCommentForm
+    },
   },
   apollo: {
     Post: {
@@ -189,12 +225,16 @@ export default {
         margin-top: $space-small;
         position: relative;
       }
+
+      .ProseMirror {
+        min-height: 0px;
+      }
     }
 
     .ds-card-image {
       img {
-        max-height: 300px;
-        object-fit: cover;
+        max-height: 2000px;
+        object-fit: contain;
         object-position: center;
       }
     }
