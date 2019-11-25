@@ -34,7 +34,7 @@ const filterForBlockedUsers = async (params, context) => {
 }
 
 const maintainPinnedPosts = params => {
-  const pinnedPostFilter = { pinnedBy_in: { role_in: ['admin'] } }
+  const pinnedPostFilter = { pinned: true }
   if (isEmpty(params.filter)) {
     params.filter = { OR: [pinnedPostFilter, {}] }
   } else {
@@ -48,15 +48,15 @@ export default {
     Post: async (object, params, context, resolveInfo) => {
       params = await filterForBlockedUsers(params, context)
       params = await maintainPinnedPosts(params)
-      return neo4jgraphql(object, params, context, resolveInfo, false)
+      return neo4jgraphql(object, params, context, resolveInfo)
     },
     findPosts: async (object, params, context, resolveInfo) => {
       params = await filterForBlockedUsers(params, context)
-      return neo4jgraphql(object, params, context, resolveInfo, false)
+      return neo4jgraphql(object, params, context, resolveInfo)
     },
     profilePagePosts: async (object, params, context, resolveInfo) => {
       params = await filterForBlockedUsers(params, context)
-      return neo4jgraphql(object, params, context, resolveInfo, false)
+      return neo4jgraphql(object, params, context, resolveInfo)
     },
     PostsEmotionsCountByEmotion: async (object, params, context, resolveInfo) => {
       const session = context.driver.session()
@@ -187,6 +187,7 @@ export default {
       `,
         { postId: args.id },
       )
+      session.close()
       const [post] = transactionRes.records.map(record => record.get('post').properties)
       return post
     },
@@ -239,6 +240,7 @@ export default {
         const deletePreviousRelationsResponse = await transaction.run(
           `
           MATCH (:User)-[previousRelations:PINNED]->(post:Post)
+          REMOVE post.pinned
           DELETE previousRelations
           RETURN post
         `,
@@ -253,6 +255,7 @@ export default {
             MATCH (user:User {id: $userId}) WHERE user.role = 'admin'
             MATCH (post:Post {id: $params.id})
             MERGE (user)-[pinned:PINNED {createdAt: toString(datetime())}]->(post)
+            SET post.pinned = true
             RETURN post, pinned.createdAt as pinnedAt
          `,
           { userId, params },
@@ -281,6 +284,7 @@ export default {
         const unpinPostTransactionResponse = await transaction.run(
           `
           MATCH (:User)-[previousRelations:PINNED]->(post:Post {id: $params.id})
+          REMOVE post.pinned
           DELETE previousRelations
           RETURN post
         `,
@@ -298,7 +302,7 @@ export default {
   },
   Post: {
     ...Resolver('Post', {
-      undefinedToNull: ['activityId', 'objectId', 'image', 'language', 'pinnedAt'],
+      undefinedToNull: ['activityId', 'objectId', 'image', 'language', 'pinnedAt', 'pinned'],
       hasMany: {
         tags: '-[:TAGGED]->(related:Tag)',
         categories: '-[:CATEGORIZED]->(related:Category)',

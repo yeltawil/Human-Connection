@@ -25,7 +25,7 @@ export const state = () => {
     filter: {
       ...defaultFilter,
     },
-    order: orderOptions['createdAt_desc'],
+    order: orderOptions.createdAt_desc,
   }
 }
 
@@ -48,10 +48,21 @@ export const mutations = {
     delete filter.categories_some
     state.filter = filter
   },
+  RESET_LANGUAGES(state) {
+    const filter = clone(state.filter)
+    delete filter.language_in
+    state.filter = filter
+  },
   TOGGLE_CATEGORY(state, categoryId) {
     const filter = clone(state.filter)
     update(filter, 'categories_some.id_in', categoryIds => xor(categoryIds, [categoryId]))
     if (isEmpty(get(filter, 'categories_some.id_in'))) delete filter.categories_some
+    state.filter = filter
+  },
+  TOGGLE_LANGUAGE(state, languageCode) {
+    const filter = clone(state.filter)
+    update(filter, 'language_in', languageCodes => xor(languageCodes, [languageCode]))
+    if (isEmpty(get(filter, 'language_in'))) delete filter.language_in
     state.filter = filter
   },
   TOGGLE_EMOTION(state, emotion) {
@@ -74,6 +85,9 @@ export const getters = {
   },
   filteredCategoryIds(state) {
     return get(state.filter, 'categories_some.id_in') || []
+  },
+  filteredLanguageCodes(state) {
+    return get(state.filter, 'language_in') || []
   },
   filteredByUsersFollowed(state) {
     return !!get(state.filter, 'author.followedBy_some.id')

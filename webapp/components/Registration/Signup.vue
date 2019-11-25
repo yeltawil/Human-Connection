@@ -1,5 +1,5 @@
 <template>
-  <ds-space v-if="!success && !error" margin="large">
+  <ds-space v-if="!data && !error" margin="large">
     <ds-form
       @input="handleInput"
       @input-valid="handleInputValid"
@@ -56,6 +56,9 @@
         <sweetalert-icon icon="error" />
       </transition>
       <ds-text align="center">{{ error.message }}</ds-text>
+      <ds-space centered class="space-top">
+        <nuxt-link to="/login">{{ $t('site.back-to-login') }}</nuxt-link>
+      </ds-space>
     </template>
   </div>
 </template>
@@ -100,13 +103,13 @@ export default {
         },
       },
       disabled: true,
-      success: false,
+      data: null,
       error: null,
     }
   },
   computed: {
     submitMessage() {
-      const { email } = this.formData
+      const { email } = this.data.Signup
       return this.$t('components.registration.signup.form.success', { email })
     },
   },
@@ -119,15 +122,14 @@ export default {
     },
     async handleSubmit() {
       const mutation = this.token ? SignupByInvitationMutation : SignupMutation
-      const { email } = this.formData
       const { token } = this
+      const { email } = this.formData
 
       try {
-        await this.$apollo.mutate({ mutation, variables: { email, token } })
-        this.success = true
-
+        const response = await this.$apollo.mutate({ mutation, variables: { email, token } })
+        this.data = response.data
         setTimeout(() => {
-          this.$emit('submit', { email })
+          this.$emit('submit', { email: this.data.Signup.email })
         }, 3000)
       } catch (err) {
         const { message } = err
@@ -150,3 +152,8 @@ export default {
   },
 }
 </script>
+<style>
+.space-top {
+  margin-top: 6ex;
+}
+</style>
