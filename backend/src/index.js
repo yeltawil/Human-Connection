@@ -3,6 +3,7 @@ import { SubscriptionServer } from 'subscriptions-transport-ws'
 import createServer from './server'
 import CONFIG from './config'
 import schema from './schema'
+import middleware from './middleware'
 
 const { app } = createServer()
 const url = new URL(CONFIG.GRAPHQL_URI)
@@ -17,7 +18,7 @@ app.listen({ port: url.port }, () => {
 app.listen({ port: ws.port }, () => {
   SubscriptionServer.create(
     {
-      schema,
+      schema: middleware(schema),
       execute,
       subscribe,
     },
