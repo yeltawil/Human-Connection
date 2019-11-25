@@ -2,8 +2,6 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import { ApolloServer } from 'apollo-server-express'
-import { execute, subscribe } from 'graphql'
-import { SubscriptionServer } from 'subscriptions-transport-ws'
 import CONFIG, { requiredConfigs } from './config'
 import middleware from './middleware'
 import { neode as getNeode, getDriver } from './bootstrap/neo4j'
@@ -51,17 +49,5 @@ const createServer = options => {
 
   return { server, app }
 }
-
-SubscriptionServer.create(
-  {
-    schema,
-    execute,
-    subscribe,
-  },
-  {
-    server: createServer().app,
-    path: CONFIG.SUBSCRIPTIONS_PATH,
-  },
-)
 
 export default createServer

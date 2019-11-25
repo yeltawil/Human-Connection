@@ -18,7 +18,7 @@ const {
   NEO4J_PASSWORD = 'neo4j',
   CLIENT_URI = 'http://localhost:3000',
   GRAPHQL_URI = 'http://localhost:4000',
-  WEBSOCKET_URI = 'ws://localhost:4000',
+  WEBSOCKET_URI = 'ws://localhost:4001',
   SUBSCRIPTIONS_PATH = '/subscriptions',
 } = process.env
 
